@@ -1,7 +1,13 @@
 import { Component } from 'react';
 import css from './Modal.module.css';
+import PropTypes from 'prop-types';
 
 export class Modal extends Component {
+  static propTypes = {
+    data: PropTypes.arrayOf(PropTypes.object.isRequired),
+    onClose: PropTypes.func.isRequired,
+  };
+
   onEcsPress = e => {
     if (e.code === 'Escape') {
       this.props.onClose();

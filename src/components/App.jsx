@@ -18,10 +18,11 @@ export class App extends Component {
     isLoading: false,
     isModalOpen: false,
     item: {},
+    isImagesEmpty: false,
   };
 
   async componentDidUpdate(_, prevState) {
-    const { value, page, isLoading } = this.state;
+    const { value, page } = this.state;
     if (value !== prevState.value || page !== prevState.page) {
       try {
         this.setState({ isLoading: true });
@@ -29,15 +30,16 @@ export class App extends Component {
           `?q=${value}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
         );
         const newImages = response.data.hits;
-        this.setState(prevState => {
-          return { images: [...prevState.images, ...newImages] };
-        });
-
-        if (response.data.totalHits / 12 > 1) {
-          this.setState({
-            isVisibleBtn: true,
-          });
+        if (!newImages.length) {
+          this.setState({ isImagesEmpty: true });
+          return;
         }
+        this.setState(prevState => {
+          return {
+            images: [...prevState.images, ...newImages],
+            isVisibleBtn: response.data.totalHits / 12 > 1,
+          };
+        });
       } catch (error) {
         console.log(error);
       } finally {
@@ -47,7 +49,14 @@ export class App extends Component {
   }
 
   onFormSubmit = value => {
-    this.setState({ value, images: [], page: 1, isVisibleBtn: false });
+    this.setState({
+      value,
+      images: [],
+      page: 1,
+      isVisibleBtn: false,
+      isModalOpen: false,
+      isImagesEmpty: false,
+    });
   };
 
   onBtnLoadMoreClick = () => {
@@ -69,7 +78,14 @@ export class App extends Component {
   };
 
   render() {
-    const { images, isVisibleBtn, isLoading, isModalOpen, item } = this.state;
+    const {
+      images,
+      isVisibleBtn,
+      isLoading,
+      isModalOpen,
+      item,
+      isImagesEmpty,
+    } = this.state;
     return (
       <div
         style={{
@@ -86,6 +102,11 @@ export class App extends Component {
         {isVisibleBtn && <Button onBtnClick={this.onBtnLoadMoreClick} />}
         {isLoading && <Loader />}
         {isModalOpen && <Modal data={item} onClose={this.modalClose} />}
+        {isImagesEmpty && (
+          <p style={{ textAlign: 'center' }}>
+            Sorry, nothing was found for your query. Please try something else.
+          </p>
+        )}
       </div>
     );
   }
