@@ -19,6 +19,7 @@ export class App extends Component {
     isModalOpen: false,
     item: {},
     isImagesEmpty: false,
+    error: '',
   };
 
   async componentDidUpdate(_, prevState) {
@@ -41,7 +42,7 @@ export class App extends Component {
           };
         });
       } catch (error) {
-        console.log(error);
+        this.setState({ error: error.message });
       } finally {
         this.setState({ isLoading: false });
       }
@@ -85,6 +86,7 @@ export class App extends Component {
       isModalOpen,
       item,
       isImagesEmpty,
+      error,
     } = this.state;
     return (
       <div
@@ -107,6 +109,7 @@ export class App extends Component {
             Sorry, nothing was found for your query. Please try something else.
           </p>
         )}
+        {error && <p>{this.state.error}</p>}
       </div>
     );
   }
