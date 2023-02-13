@@ -82,7 +82,7 @@ export class App extends Component {
       isVisibleBtn,
       isLoading,
       isModalOpen,
-      item,
+      largeImageURL,
       isImagesEmpty,
       error,
     } = this.state;
@@ -102,14 +102,18 @@ export class App extends Component {
         {isVisibleBtn && <Button onBtnClick={this.onBtnLoadMoreClick} />}
         {isLoading && <Loader />}
         {isModalOpen && (
-          <Modal data={this.state.largeImageURL} onClose={this.modalClose} />
+          <Modal data={largeImageURL} onClose={this.modalClose} />
         )}
         {isImagesEmpty && (
           <p style={{ textAlign: 'center' }}>
             Sorry, nothing was found for your query. Please try something else.
           </p>
         )}
-        {error && <p>{this.state.error}</p>}
+        {error && (
+          <p style={{ textAlign: 'center' }}>
+            Sorry, something going wrong. Please try again.
+          </p>
+        )}
       </div>
     );
   }
