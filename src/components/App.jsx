@@ -17,7 +17,7 @@ export class App extends Component {
     isVisibleBtn: false,
     isLoading: false,
     isModalOpen: false,
-    item: {},
+    largeImageURL: '',
     isImagesEmpty: false,
     error: '',
   };
@@ -38,7 +38,7 @@ export class App extends Component {
         this.setState(prevState => {
           return {
             images: [...prevState.images, ...newImages],
-            isVisibleBtn: response.data.totalHits / 12 > 1,
+            isVisibleBtn: page < Math.ceil(response.data.totalHits / 12),
           };
         });
       } catch (error) {
@@ -72,10 +72,8 @@ export class App extends Component {
     });
   };
 
-  onImageClick = id => {
-    const item = this.state.images.filter(item => item.id === id);
-
-    this.setState({ isModalOpen: true, item: item });
+  onImageClick = largeImageURL => {
+    this.setState({ isModalOpen: true, largeImageURL: largeImageURL });
   };
 
   render() {
@@ -103,7 +101,9 @@ export class App extends Component {
         </ImageGallery>
         {isVisibleBtn && <Button onBtnClick={this.onBtnLoadMoreClick} />}
         {isLoading && <Loader />}
-        {isModalOpen && <Modal data={item} onClose={this.modalClose} />}
+        {isModalOpen && (
+          <Modal data={this.state.largeImageURL} onClose={this.modalClose} />
+        )}
         {isImagesEmpty && (
           <p style={{ textAlign: 'center' }}>
             Sorry, nothing was found for your query. Please try something else.

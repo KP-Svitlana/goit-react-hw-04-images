@@ -12,7 +12,7 @@ export const ImageGalleryItem = ({ data, onClick }) => {
               src={el.webformatURL}
               alt={el.tags}
               onClick={() => {
-                return onClick(el.id);
+                return onClick(el.largeImageURL);
               }}
             />
           </li>

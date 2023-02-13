@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 export class Modal extends Component {
   static propTypes = {
-    data: PropTypes.arrayOf(PropTypes.object.isRequired),
+    data: PropTypes.string,
     onClose: PropTypes.func.isRequired,
   };
 
@@ -23,25 +23,12 @@ export class Modal extends Component {
   }
 
   render() {
-    const { largeImageURL, tags } = this.props.data[0];
     return (
       <div className={css.Overlay} onClick={this.props.onClose}>
         <div className={css.Modal}>
-          <img src={largeImageURL} alt={tags} />
+          <img src={this.props.data} alt={''} />
         </div>
       </div>
     );
   }
 }
-
-// export const Modal = ({ data, onClose }) => {
-//   const { largeImageURL, tags } = data[0];
-
-//   return (
-//     <div className={css.Overlay} onClick={onClose}>
-//       <div className={css.Modal}>
-//         <img src={largeImageURL} alt={tags} />
-//       </div>
-//     </div>
-//   );
-// };
