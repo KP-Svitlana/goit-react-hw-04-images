@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { RestAPI } from './RestAPI/RestAPI';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ImageGalleryItem } from './ImageGalleryItem/ImageGalleryItem';
@@ -7,114 +7,94 @@ import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 
-const API_KEY = '33564179-6b2e988bcacb2b304e2ebfd76';
-axios.defaults.baseURL = 'https://pixabay.com/api/';
-export class App extends Component {
-  state = {
-    value: '',
-    images: [],
-    page: 1,
-    isVisibleBtn: false,
-    isLoading: false,
-    isModalOpen: false,
-    largeImageURL: '',
-    isImagesEmpty: false,
-    error: '',
-  };
+export const App = () => {
+  const [value, setValue] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isVisibleBtn, setIsVisibleBtn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [isImagesEmpty, setIsImagesEmpty] = useState('');
+  const [error, setError] = useState('');
 
-  async componentDidUpdate(_, prevState) {
-    const { value, page } = this.state;
-    if (value !== prevState.value || page !== prevState.page) {
+  useEffect(() => {
+    if (value === '') {
+      return;
+    } else {
       try {
-        this.setState({ isLoading: true });
-        const response = await axios.get(
-          `?q=${value}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-        );
-        const newImages = response.data.hits;
-        if (!newImages.length) {
-          this.setState({ isImagesEmpty: true });
-          return;
+        setIsLoading(true);
+        async function fetchData() {
+          const response = await RestAPI(value, page).then(
+            result => result.data
+          );
+          const newImages = await response.hits;
+          const totalHits = await response.totalHits;
+
+          if (!newImages.length) {
+            setIsImagesEmpty(true);
+            return;
+          }
+          setImages(images => [...images, ...newImages]);
+          setIsVisibleBtn(page < Math.ceil(totalHits / 12));
         }
-        this.setState(prevState => {
-          return {
-            images: [...prevState.images, ...newImages],
-            isVisibleBtn: page < Math.ceil(response.data.totalHits / 12),
-          };
-        });
+        fetchData();
       } catch (error) {
-        this.setState({ error: error.message });
+        setError(error.message);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
     }
-  }
+  }, [page, value]);
 
-  onFormSubmit = value => {
-    this.setState({
-      value,
-      images: [],
-      page: 1,
-      isVisibleBtn: false,
-      isModalOpen: false,
-      isImagesEmpty: false,
-    });
+  const onFormSubmit = value => {
+    setValue(value);
+    setImages([]);
+    setPage(1);
+    setIsVisibleBtn(false);
+    setIsModalOpen(false);
+    setIsImagesEmpty(false);
   };
 
-  onBtnLoadMoreClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const onBtnLoadMoreClick = () => {
+    setPage(page + 1);
   };
 
-  modalClose = () => {
-    this.setState({
-      isModalOpen: false,
-    });
+  const modalClose = () => {
+    setIsModalOpen(false);
   };
 
-  onImageClick = largeImageURL => {
-    this.setState({ isModalOpen: true, largeImageURL: largeImageURL });
+  const onImageClick = largeImageURL => {
+    setIsModalOpen(true);
+    setLargeImageURL(largeImageURL);
   };
 
-  render() {
-    const {
-      images,
-      isVisibleBtn,
-      isLoading,
-      isModalOpen,
-      largeImageURL,
-      isImagesEmpty,
-      error,
-    } = this.state;
-    return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gridGap: '16px',
-          paddingBottom: '24px',
-        }}
-      >
-        <Searchbar onSubmit={this.onFormSubmit} />
-        <ImageGallery>
-          <ImageGalleryItem data={images} onClick={this.onImageClick} />
-        </ImageGallery>
-        {isVisibleBtn && <Button onBtnClick={this.onBtnLoadMoreClick} />}
-        {isLoading && <Loader />}
-        {isModalOpen && (
-          <Modal data={largeImageURL} onClose={this.modalClose} />
-        )}
-        {isImagesEmpty && (
-          <p style={{ textAlign: 'center' }}>
-            Sorry, nothing was found for your query. Please try something else.
-          </p>
-        )}
-        {error && (
-          <p style={{ textAlign: 'center' }}>
-            Sorry, something going wrong. Please try again.
-          </p>
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridGap: '16px',
+        paddingBottom: '24px',
+      }}
+    >
+      <Searchbar onSubmit={onFormSubmit} />
+      <ImageGallery>
+        <ImageGalleryItem data={images} onClick={onImageClick} />
+      </ImageGallery>
+      {isVisibleBtn && <Button onBtnClick={onBtnLoadMoreClick} />}
+      {isLoading && <Loader />}
+      {isModalOpen && <Modal data={largeImageURL} onClose={modalClose} />}
+      {isImagesEmpty && (
+        <p style={{ textAlign: 'center' }}>
+          Sorry, nothing was found for your query. Please try something else.
+        </p>
+      )}
+      {error && (
+        <p style={{ textAlign: 'center' }}>
+          Sorry, something going wrong. Please try again.
+        </p>
+      )}
+    </div>
+  );
+};
