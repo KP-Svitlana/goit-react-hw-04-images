@@ -21,29 +21,26 @@ export const App = () => {
   useEffect(() => {
     if (value === '') {
       return;
-    } else {
-      try {
-        setIsLoading(true);
-        async function fetchData() {
-          const response = await RestAPI(value, page).then(
-            result => result.data
-          );
-          const newImages = await response.hits;
-          const totalHits = await response.totalHits;
+    }
+    try {
+      setIsLoading(true);
+      async function fetchData() {
+        const { hits, totalHits } = await RestAPI(value, page).then(
+          result => result.data
+        );
 
-          if (!newImages.length) {
-            setIsImagesEmpty(true);
-            return;
-          }
-          setImages(images => [...images, ...newImages]);
-          setIsVisibleBtn(page < Math.ceil(totalHits / 12));
+        if (!hits.length) {
+          setIsImagesEmpty(true);
+          return;
         }
-        fetchData();
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
+        setImages(images => [...images, ...hits]);
+        setIsVisibleBtn(page < Math.ceil(totalHits / 12));
       }
+      fetchData();
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   }, [page, value]);
 
